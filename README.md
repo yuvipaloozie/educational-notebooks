@@ -1,4 +1,4 @@
-### Preface
+# Preface
 When it comes the field of AI, there are two main classes of models that have emerged: machine learning (ML) and deep learning (DL). Historically, ML has been more effective on smaller, structured sets of data with significant feature engineering. DL approaches, such as transformers or neural networks, are the de facto choice for massive, highly unstructured datasets.
 
 ## MNIST with ML
