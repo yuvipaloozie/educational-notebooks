@@ -1,4 +1,4 @@
-# The Heartbeat of Math: Arrhythmia Detection
+# Analyzing ECG Data for Arrythmia Detection 
 ### Comparative Analysis: Domain-Specific Feature Engineering + ML vs. Deep Learning
 
 ![Status](https://img.shields.io/badge/Status-Complete-success)
