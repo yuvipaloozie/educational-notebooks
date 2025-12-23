@@ -1,5 +1,5 @@
 # The Heartbeat of Math: Arrhythmia Detection
-### Comparative Analysis: Domain-Specific Feature Engineering vs. Deep Learning
+### Comparative Analysis: Domain-Specific Feature Engineering + ML vs. Deep Learning
 
 ![Status](https://img.shields.io/badge/Status-Complete-success)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
@@ -13,30 +13,30 @@ This project challenges the industry trend of relying solely on Deep Learning fo
 
 ## Data Source and Processing
 * **Source:** [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/) (PhysioNet).
-* **Specifications:** 48 half-hour excerpts of 2-channel ambulatory ECG recordings at 360 samples per second.
+* **Specifications:** 48 half-hour excerpts of 2-channel ECG recordings at 360 samples per second.
 * **Preprocessing Pipeline:**
     * **Noise Removal:** Custom 5-15Hz Bandpass filter implementation.
-    * **Peak Detection:** Robust Pan-Tompkins Algorithm implemented from scratch to handle baseline wander.
+    * **Peak Detection:** Robust algorithm created from scratch to adjust for baseline wander. 
     * **Windowing:** Signals sliced into 10-second non-overlapping windows.
-    * **Labeling Strategy:** "Weakly Supervised" hierarchy. Windows are classified based on the most severe beat present (Hierarchy: Ventricular > Atrial > Conduction Block > Normal).
+    * **Labeling Strategy:** Windows are classified based on the most severe beat present (Hierarchy: Ventricular > Atrial > Conduction Block > Normal).
 
 ## Major Libraries
-* **Signal Processing:** `wfdb`, `scipy` (Signal and Stats modules)
-* **Machine Learning:** `scikit-learn` (Logistic Regression, PCA, Metrics)
-* **Deep Learning:** `tensorflow` / `keras` (1D-CNN)
+* **Signal Processing:** `wfdb`, `scipy` 
+* **Machine Learning:** `scikit-learn` 
+* **Deep Learning:** `tensorflow` / `keras`
 * **Data Manipulation:** `numpy`, `pandas`
 * **Visualization:** `matplotlib`, `seaborn`
 
 ## Code Structure
-The project is contained within a single reproducible script (`arrythmiaml.py`) designed to run end-to-end:
+The project is contained within a single reproducible notebook (`arrythmiaml.ipynb`) designed to narrate the comparison and run end-to-end:
 
 1.  **Config Class:** Centralized configuration for sample rates, window sizes, and paths.
 2.  **download_full_dataset():** Automates data ingestion directly from PhysioNet.
-3.  **HeartEngineer Class (The Core):**
+3.  **HeartEngineer Class:**
     * `pan_tompkins_detector`: Robust R-peak detection.
     * `extract_features`: Generates 11 domain features including SD1/SD2 (Chaos), Kurtosis/Skewness (Morphology), and Sample Entropy.
 4.  **Model Definitions:**
-    * **Engineering Pipeline:** StandardScaler -> Logistic Regression (Multinomial).
+    * **Engineering Pipeline:** StandardScaler -> Logistic Regression.
     * **Deep Learning Pipeline:** 2-layer 1D-CNN with Batch Normalization and Dropout.
 5.  **Visualization Functions:**
     * `plot_chaos_gallery`: Visualizes Poincaré plots for different arrhythmia classes.
