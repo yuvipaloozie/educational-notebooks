@@ -1,78 +1,63 @@
-# The Heartbeat of Math: System Dynamics vs. Deep Learning
-### *Arrhythmia Detection via Chaos Theory & Morphological Feature Engineering*
+# The Heartbeat of Math: Arrhythmia Detection
+### Comparative Analysis: Domain-Specific Feature Engineering vs. Deep Learning
 
-![Project Status](https://img.shields.io/badge/Status-Complete-green)
+![Status](https://img.shields.io/badge/Status-Complete-success)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Tech](https://img.shields.io/badge/TensorFlow-Scikit--Learn-orange)
 ![Domain](https://img.shields.io/badge/Domain-Biomedical_Engineering-red)
 
-## Executive Summary
-**Deep Learning isn't always the answer.**
-This project challenges the industry trend of throwing raw data at Convolutional Neural Networks (CNNs). By applying domain knowledge—specifically **Non-Linear Dynamics (Chaos Theory)** and **Signal Morphology**—we built a lightweight Logistic Regression classifier that rivals a Deep Learning model in accuracy while being **1,350x faster** and fully interpretable.
+## Summary
+This project challenges the industry trend of relying solely on Deep Learning for biological signal processing. It benchmarks a 1D-Convolutional Neural Network (CNN) against a lightweight Logistic Regression classifier that utilizes domain-specific feature engineering (Non-Linear Dynamics and Chaos Theory).
 
-| Metric | Deep Learning (1D-CNN) | Engineering (This Project) |
-| :--- | :--- | :--- |
-| **Training Time** | ~30 seconds | **0.02 seconds** |
-| **Interpretability** | Black Box (Saliency Maps) | **Transparent (Physics Metrics)** |
-| **RBBB Detection** | 82% Recall | **90% Recall** |
-| **LBBB Detection** | 82% Recall | **75% Recall** |
+**Core Hypothesis:** A model grounded in physiological principles (Entropy, Poincaré geometry, Signal Morphology) can achieve comparable diagnostic performance to a "Black Box" Neural Network while offering superior interpretability and 1,000x faster training times.
 
----
-
-## The Hypothesis
-Biological systems are governed by homeostatic control loops, not pixel patterns.
-* **The DL Assumption:** The pathology is a visual pattern in the voltage signal (Shape).
-* **The Physics Assumption:** The pathology is a breakdown in the system's stability (Entropy & Rhythm).
-
-**Goal:** Prove that measuring the *dynamics* of the system (Poincaré Plots, Kurtosis) is more robust than learning the *shape* of the signal via Brute Force.
-
----
-
-## Methodology
-
-### 1. Data Pipeline
+## Data Source and Processing
 * **Source:** [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/) (PhysioNet).
-* **Processing:**
-    * **Pan-Tompkins Algorithm:** Implemented from scratch to robustly detect R-peaks despite baseline wander and noise.
-    * **Windowing:** Sliced 30-minute recordings into 10-second non-overlapping windows.
-    * **Labeling:** "Weakly Supervised" approach. If a window contains a specific arrhythmia (PVC, LBBB, etc.), the entire window is labeled as that class based on a clinical hierarchy of severity.
+* **Specifications:** 48 half-hour excerpts of 2-channel ambulatory ECG recordings at 360 samples per second.
+* **Preprocessing Pipeline:**
+    * **Noise Removal:** Custom 5-15Hz Bandpass filter implementation.
+    * **Peak Detection:** Robust Pan-Tompkins Algorithm implemented from scratch to handle baseline wander.
+    * **Windowing:** Signals sliced into 10-second non-overlapping windows.
+    * **Labeling Strategy:** "Weakly Supervised" hierarchy. Windows are classified based on the most severe beat present (Hierarchy: Ventricular > Atrial > Conduction Block > Normal).
 
-### 2. The "Glass Box" Model (Feature Engineering)
-Instead of raw voltage, we feed the model 9 explicit features:
+## Major Libraries
+* **Signal Processing:** `wfdb`, `scipy` (Signal and Stats modules)
+* **Machine Learning:** `scikit-learn` (Logistic Regression, PCA, Metrics)
+* **Deep Learning:** `tensorflow` / `keras` (1D-CNN)
+* **Data Manipulation:** `numpy`, `pandas`
+* **Visualization:** `matplotlib`, `seaborn`
 
-| Feature Dimension | Metric | What It Detects |
-| :--- | :--- | :--- |
-| **Chaos (Rhythm)** | **SD1 (Poincaré Width)** | **Atrial Fibrillation / PVC:** Measures short-term chaotic variance (Parasympathetic activity). |
-| **Stability (Rhythm)** | **SD2 (Poincaré Length)** | **CHF / Stress:** Measures long-term heart rate variability. |
-| **Morphology (Shape)** | **Kurtosis** | **LBBB / RBBB:** "Spikiness." Blocked beats are wide/flat (Low Kurtosis); Normal beats are sharp (High Kurtosis). |
-| **Symmetry (Shape)** | **Skewness** | **PVC:** Premature ventricular beats often polarize in the opposite direction, flipping the skew. |
-| **Complexity (Texture)** | **Hjorth Parameters** | **Noise vs. Signal:** Measures the "roughness" of the wave to filter artifacts. |
+## Code Structure
+The project is contained within a single reproducible script (`arrythmiaml.py`) designed to run end-to-end:
 
-### 3. The "Black Box" Model (Benchmark)
-* **Architecture:** 1D-CNN (2 Convolutional Blocks + Global Average Pooling).
-* **Input:** Raw voltage (3600 time steps).
-* **Training:** 30 Epochs, Adam Optimizer, Class Weights for imbalance.
+1.  **Config Class:** Centralized configuration for sample rates, window sizes, and paths.
+2.  **download_full_dataset():** Automates data ingestion directly from PhysioNet.
+3.  **HeartEngineer Class (The Core):**
+    * `pan_tompkins_detector`: Robust R-peak detection.
+    * `extract_features`: Generates 11 domain features including SD1/SD2 (Chaos), Kurtosis/Skewness (Morphology), and Sample Entropy.
+4.  **Model Definitions:**
+    * **Engineering Pipeline:** StandardScaler -> Logistic Regression (Multinomial).
+    * **Deep Learning Pipeline:** 2-layer 1D-CNN with Batch Normalization and Dropout.
+5.  **Visualization Functions:**
+    * `plot_chaos_gallery`: Visualizes Poincaré plots for different arrhythmia classes.
+    * `visualize_interpretability`: Compares CNN Saliency Maps vs. Engineering Feature Space.
 
----
+## Results and Evaluations
+The study resulted in a comparison between the two approaches across 5 classes (Normal, LBBB, RBBB, PVC, APC).
 
-## Key Results & Analysis
+| Metric | Engineering Model (Logistic Reg) | Deep Learning (1D-CNN) | Winner |
+| :--- | :--- | :--- | :--- |
+| **Training Time** | **~0.02 Seconds** | ~30.0 Seconds | **Engineering (1500x Faster)** |
+| **Interpretability** | **Transparent (Physics-based)** | Opaque (Saliency Maps) | **Engineering** |
+| **RBBB Recall** | **0.90** | 0.82 | **Engineering** |
+| **PVC Recall** | 0.49 | **0.54** | Deep Learning |
+| **Overall Accuracy** | ~83% | ~86% | Deep Learning (Marginal) |
 
-### 1. The "Physics" of Arrhythmia
-The scatter plot below (generated by the project) shows why the engineering approach works.
-* **Purple Dots (Normal):** Cluster tightly in the bottom-left. The heart is stable.
-* **Teal/Yellow Dots (Arrhythmia):** Explode outward. The system has entered a chaotic state.
-* **Conclusion:** The classes are largely linearly separable in "Phase Space," rendering deep neural networks unnecessary for many cases.
+**Key Findings:**
+* **Morphology Matters:** Initially, the Engineering model failed on Bundle Branch Blocks (LBBB). Adding statistical moments (Kurtosis) fixed this, as LBBB beats are statistically "flatter" than normal beats.
+* **Efficiency:** The Engineering model is lightweight enough to run on ultra-low-power edge devices (e.g., smartwatches) without GPU acceleration.
 
-*(Insert your "Failure Analysis" Scatter Plot here)*
-
-### 2. The "Shape" Problem (LBBB)
-Initially, the engineering model failed to detect **Left Bundle Branch Blocks (LBBB)** because LBBB is a *regular* rhythm (low chaos).
-* **Fix:** We introduced **Kurtosis** (Statistical 4th Moment).
-* **Result:** The model learned that "Low Kurtosis" = "Wide Beat" = "LBBB", instantly recovering performance to match the CNN.
-
----
-
-## 💻 Installation & Usage
-
-### Prerequisites
-```bash
-pip install numpy pandas matplotlib seaborn scikit-learn tensorflow wfdb scipy tqdm
+## Future Work
+* **Edge Deployment:** Port the HeartEngineer logic to C++ for embedded microcontroller testing.
+* **Cross-Dataset Validation:** Test robustness on the AHA or PTB Diagnostic ECG Database.
+* **Hybrid Architecture:** Implement a stack where the Engineering model handles initial screening (for speed) and the CNN handles ambiguous cases (for precision).
