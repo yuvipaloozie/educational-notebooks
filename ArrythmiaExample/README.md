@@ -9,13 +9,46 @@
 ## Summary
 This project challenges the industry trend of relying solely on Deep Learning for biological signal processing. It benchmarks a 1D-Convolutional Neural Network (CNN) against a lightweight Logistic Regression classifier that utilizes domain-specific feature engineering (Non-Linear Dynamics and Chaos Theory).
 
-**Core Hypothesis:** A model grounded in physiological principles (Entropy, Poincaré geometry, Signal Morphology) can achieve comparable diagnostic performance to a "Black Box" Neural Network while offering superior interpretability and 1,000x faster training times.
+**Hypothesis:** A model grounded in physiological principles can achieve comparable diagnostic performance to a "black box" neural network while offering superior interpretability and magntitudes of reduction in training time. 
+
+## Background and Motivation
+
+### 1. The Biological Context: How the Heart "Speaks"
+The heart is not just a muscle; it is an electromechanical pump controlled by a complex biological circuit.
+* **The Signal:** Every heartbeat is triggered by an electrical impulse from the Sinoatrial (SA) Node. This impulse travels down conductive pathways (His-Purkinje system), causing the muscle fibers to contract.
+* **The ECG:** An Electrocardiogram (ECG) measures the voltage changes on the skin caused by this electrical wave. A normal heartbeat produces a specific shape called the **P-QRS-T complex**:
+    * **P-wave:** Atrial contraction.
+    * **QRS Complex:** Ventricular contraction (the main "spike").
+    * **T-wave:** Resetting (repolarization).
+
+### 2. The Clinical Problem: Defining Arrhythmia
+An arrhythmia is any deviation from the normal rate or rhythm of the heart. Clinicians generally look for two distinct types of failures:
+1.  **Failures of Rhythm (Timing):** The electrical "pacemaker" is misfiring. The heart beats too fast, too slow, or irregularly (e.g., Atrial Fibrillation).
+    * *Doctor's Check:* Is the spacing between beats (R-R Interval) constant?
+2.  **Failures of Conduction (Morphology):** The electrical signal is blocked or delayed in the tissue. The heart beats on time, but the wave has to take a detour, changing its shape (e.g., Left Bundle Branch Block).
+    * *Doctor's Check:* Is the QRS complex narrow (sharp) or wide (blunted)?
+
+### 3. The Mathematical Translation: From Biology to Physics
+This project hypothesizes that we do not need a neural network to learn these patterns from scratch. We can explicitly engineer features that map directly to the clinician's checklist:
+
+| Clinical Feature | Mathematical Domain | The Feature We Engineered |
+| :--- | :--- | :--- |
+| **Rhythm Stability** | **Non-Linear Dynamics (Chaos Theory)** | **Poincaré Plots:** We map each beat interval ($t_n$) against the next ($t_{n+1}$). A stable heart creates a tight cluster; a chaotic heart (AFib) creates a scattered cloud. We quantify this with **Entropy** and **SD1/SD2** geometry. |
+| **Signal Shape** | **Statistical Moments** | **Kurtosis (Peakedness):** A healthy beat is a sharp spike (High Kurtosis). A blocked beat (LBBB) is a wide, sluggish wave (Low Kurtosis). This single metric mathematically describes the "Morphology." |
+| **Signal Direction** | **Distribution Asymmetry** | **Skewness:** A Premature Ventricular Contraction (PVC) originates from the bottom of the heart, reversing the signal polarity. This flips the statistical skew of the wave. |
+
+**Why this matters:** By translating "Medical Symptoms" into "Physics Metrics," we create a model that is inherently interpretable. If the model predicts *Arrhythmia*, we can explain exactly why: *"The signal entropy was high (Chaos) and the Kurtosis was low (Blockage)."*
+
+
+
 
 ## Data Source and Processing
 * **Source:** [MIT-BIH Arrhythmia Database](https://physionet.org/content/mitdb/1.0.0/) (PhysioNet).
 * **Specifications:** 48 half-hour excerpts of 2-channel ECG recordings at 360 samples per second.
+    * Beats in each plot are annotated using a letter code (e.g. 'N' - normal, 'V' - Premature ventricular contraction, 'A' - Atrial premature beat, etc.)
+    * Further info for each of the records (patient profile, medication, etc.) can be found at link
 * **Preprocessing Pipeline:**
-    * **Noise Removal:** Custom 5-15Hz Bandpass filter implementation.
+    * **Noise Removal:** 5-15Hz Bandpass filter implementation to remove noisy signals. 
     * **Peak Detection:** Robust algorithm created from scratch to adjust for baseline wander. 
     * **Windowing:** Signals sliced into 10-second non-overlapping windows.
     * **Labeling Strategy:** Windows are classified based on the most severe beat present (Hierarchy: Ventricular > Atrial > Conduction Block > Normal).
@@ -28,7 +61,8 @@ This project challenges the industry trend of relying solely on Deep Learning fo
 * **Visualization:** `matplotlib`, `seaborn`
 
 ## Code Structure
-The project is contained within a single reproducible notebook (`arrythmiaml.ipynb`) designed to narrate the comparison and run end-to-end:
+The project is contained within a single reproducible notebook (`arrythmiaml.ipynb`) designed to narrate the comparison and run end-to-end. 
+**Note:** The comparison between models was repeated for two different tasks - binary classification (normal vs _any_ arrythmia) and multi-category classification (normal vs LBBB vs RBBB etc.)
 
 1.  **Config Class:** Centralized configuration for sample rates, window sizes, and paths.
 2.  **download_full_dataset():** Automates data ingestion directly from PhysioNet.
